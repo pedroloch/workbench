@@ -39,7 +39,7 @@ This installs `wkb` in `~/.local/bin`. Keep that directory on your PATH. To upda
 an existing installation, add `--replace`; choose another bin with `--dir DIR`.
 The installer preserves existing symlinks and does not touch your vault.
 
-Requires Go 1.26.6+. macOS uses the native Keychain and needs Apple's Command Line
+Requires Go 1.26.9+. macOS uses the native Keychain and needs Apple's Command Line
 Tools with CGO. Linux uses a passphrase automatically. A macOS build without CGO
 can use `wkb init --password`.
 
@@ -49,6 +49,17 @@ Create your vault once, then open the local interface:
 wkb init
 wkb ui
 ```
+
+On Linux, agents run commands without a terminal and cannot type the
+passphrase. Unlock the vault in your own terminal before handing work over:
+
+```sh
+wkb unlock --ttl 8h
+wkb lock
+```
+
+Until the ttl expires or you run `lock`, commands without a terminal open the
+vault from the kernel keyring. Unlocking again asks for the passphrase.
 
 ## Give your agent a key, without saving it
 
@@ -245,6 +256,7 @@ opt-in and creates/deletes only a randomized synthetic entry:
 
 ```sh
 WORKBENCH_TEST_KEYCHAIN=1 go test ./internal/keyring -run TestNativeKeychainRoundTrip
+WORKBENCH_TEST_KERNEL_KEYRING=1 go test ./internal/keyring -run TestKernelSession
 ```
 
 ## Contribute
